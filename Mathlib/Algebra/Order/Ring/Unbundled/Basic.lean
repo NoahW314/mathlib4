@@ -561,6 +561,35 @@ theorem cmp_mul_neg_right [ExistsAddOfLE R] [MulPosStrictMono R]
     {a : R} (ha : a < 0) (b c : R) : cmp (b * a) (c * a) = cmp c b :=
   (strictAnti_mul_right ha).cmp_map_eq b c
 
+lemma mul_neg_iff [ExistsAddOfLE R] [PosMulStrictMono R] [MulPosStrictMono R]
+    [AddLeftReflectLE R] [AddLeftMono R] :
+    a * b < 0 ↔ 0 < a ∧ b < 0 ∨ a < 0 ∧ 0 < b := by
+  contrapose!
+  rw [mul_nonneg_iff]
+  grind
+
+lemma mul_nonpos_iff [ExistsAddOfLE R] [MulPosStrictMono R] [PosMulStrictMono R]
+    [AddLeftMono R] [AddLeftReflectLE R] :
+    a * b ≤ 0 ↔ 0 ≤ a ∧ b ≤ 0 ∨ a ≤ 0 ∧ 0 ≤ b := by
+  contrapose!
+  rw [mul_pos_iff]
+  grind
+
+lemma mul_nonneg_iff_neg_imp_nonpos [ExistsAddOfLE R] [PosMulStrictMono R] [MulPosStrictMono R]
+    [AddLeftMono R] [AddLeftReflectLE R] :
+    0 ≤ a * b ↔ (a < 0 → b ≤ 0) ∧ (b < 0 → a ≤ 0) := by
+  grind [mul_nonneg_iff]
+
+lemma mul_nonpos_iff_pos_imp_nonpos [ExistsAddOfLE R] [PosMulStrictMono R] [MulPosStrictMono R]
+    [AddLeftMono R] [AddLeftReflectLE R] :
+    a * b ≤ 0 ↔ (0 < a → b ≤ 0) ∧ (b < 0 → 0 ≤ a) := by
+  grind [mul_nonpos_iff]
+
+lemma mul_nonpos_iff_neg_imp_nonneg [ExistsAddOfLE R] [PosMulStrictMono R] [MulPosStrictMono R]
+    [AddLeftMono R] [AddLeftReflectLE R] :
+    a * b ≤ 0 ↔ (a < 0 → 0 ≤ b) ∧ (0 < b → a ≤ 0) := by
+  grind [mul_nonpos_iff]
+
 @[simp]
 theorem mul_self_pos [ExistsAddOfLE R] [PosMulStrictMono R] [MulPosStrictMono R]
     [AddLeftStrictMono R] [AddLeftReflectLT R]
@@ -677,7 +706,7 @@ lemma max_mul_mul_le_max_mul_max [PosMulMono R] [MulPosMono R] (b c : R) (ha : 0
 
 /-- Binary, squared, and division-free **arithmetic mean-geometric mean inequality**
 (aka AM-GM inequality) for linearly ordered commutative semirings. -/
-lemma two_mul_le_add_sq [ExistsAddOfLE R] [MulPosStrictMono R]
+lemma two_mul_le_add_sq [ExistsAddOfLE R] [MulPosMono R]
     [AddLeftReflectLE R] [AddLeftMono R]
     (a b : R) : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
   simpa [fn_min_add_fn_max (fun x ↦ x * x), sq, two_mul, add_mul]
@@ -687,7 +716,7 @@ alias two_mul_le_add_pow_two := two_mul_le_add_sq
 
 /-- Binary, squared, and division-free **arithmetic mean-geometric mean inequality**
 (aka AM-GM inequality) for linearly ordered commutative semirings. -/
-lemma four_mul_le_sq_add [ExistsAddOfLE R] [MulPosStrictMono R]
+lemma four_mul_le_sq_add [ExistsAddOfLE R] [MulPosMono R]
     [AddLeftReflectLE R] [AddLeftMono R]
     (a b : R) : 4 * a * b ≤ (a + b) ^ 2 := by
   calc 4 * a * b
@@ -700,7 +729,7 @@ alias four_mul_le_pow_two_add := four_mul_le_sq_add
 
 /-- Binary and division-free **arithmetic mean-geometric mean inequality**
 (aka AM-GM inequality) for linearly ordered commutative semirings. -/
-lemma two_mul_le_add_of_sq_le_mul [ExistsAddOfLE R] [MulPosStrictMono R] [PosMulStrictMono R]
+lemma two_mul_le_add_of_sq_le_mul [ExistsAddOfLE R] [MulPosMono R] [PosMulStrictMono R]
     [AddLeftReflectLE R] [AddLeftMono R] {a b r : R}
     (ha : 0 ≤ a) (hb : 0 ≤ b) (ht : r ^ 2 ≤ a * b) : 2 * r ≤ a + b := by
   apply nonneg_le_nonneg_of_sq_le_sq (Left.add_nonneg ha hb)
@@ -718,36 +747,6 @@ end LinearOrderedCommSemiring
 section LinearOrderedRing
 
 variable [Ring R] [LinearOrder R] {a b : R}
-
--- TODO: Can the following five lemmas be generalised to
--- `[Semiring R] [LinearOrder R] [ExistsAddOfLE R] ..`?
-
-lemma mul_neg_iff [PosMulStrictMono R] [MulPosStrictMono R]
-    [AddLeftReflectLT R] [AddLeftStrictMono R] :
-    a * b < 0 ↔ 0 < a ∧ b < 0 ∨ a < 0 ∧ 0 < b := by
-  rw [← neg_pos, neg_mul_eq_mul_neg, mul_pos_iff (R := R), neg_pos, neg_lt_zero]
-
-lemma mul_nonpos_iff [MulPosStrictMono R] [PosMulStrictMono R]
-    [AddLeftReflectLE R] [AddLeftMono R] :
-    a * b ≤ 0 ↔ 0 ≤ a ∧ b ≤ 0 ∨ a ≤ 0 ∧ 0 ≤ b := by
-  rw [← neg_nonneg, neg_mul_eq_mul_neg, mul_nonneg_iff (R := R), neg_nonneg, neg_nonpos]
-
-lemma mul_nonneg_iff_neg_imp_nonpos [PosMulStrictMono R] [MulPosStrictMono R]
-    [AddLeftMono R] [AddLeftReflectLE R] :
-    0 ≤ a * b ↔ (a < 0 → b ≤ 0) ∧ (b < 0 → a ≤ 0) := by
-  rw [← neg_mul_neg, mul_nonneg_iff_pos_imp_nonneg (R := R)]; simp only [neg_pos, neg_nonneg]
-
-lemma mul_nonpos_iff_pos_imp_nonpos [PosMulStrictMono R] [MulPosStrictMono R]
-    [AddLeftMono R] [AddLeftReflectLE R] :
-    a * b ≤ 0 ↔ (0 < a → b ≤ 0) ∧ (b < 0 → 0 ≤ a) := by
-  rw [← neg_nonneg, ← mul_neg, mul_nonneg_iff_pos_imp_nonneg (R := R)]
-  simp only [neg_pos, neg_nonneg]
-
-lemma mul_nonpos_iff_neg_imp_nonneg [PosMulStrictMono R] [MulPosStrictMono R]
-    [AddLeftMono R] [AddLeftReflectLE R] :
-    a * b ≤ 0 ↔ (a < 0 → 0 ≤ b) ∧ (0 < b → a ≤ 0) := by
-  rw [← neg_nonneg, ← neg_mul, mul_nonneg_iff_pos_imp_nonneg (R := R)]
-  simp only [neg_pos, neg_nonneg]
 
 lemma neg_one_lt_zero
     [ZeroLEOneClass R] [NeZero (1 : R)] [AddLeftStrictMono R] :
